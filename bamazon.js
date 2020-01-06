@@ -42,38 +42,46 @@ function start() {
             inquirer
             .prompt([
                 {
-                    name: "productID",
+                    name: "item_id",
                     type: "input",
                     message: "Please enter the item ID you would like to purchase!\n"
                 },
                 {
                     name: "quantity",
                     type: "input",
-                    message: "How many would you like?_\n"   
+                    message: "How many would you like to order?_\n"   
                 }
             ])
             .then(function(answer){
 
                 connection.query("SELECT * FROM products", function(err, res){
                     if (err) throw err;
+                    var quantity = answer.quantity;
+                    if (quantity > res[0].stock_quantity) {
+                        console.log("We only have " + res[0].stock_quantity + " items of the product selected")
+                        start();
+ 
+                    } else{  
+                        console.log("");
+                        console.log(res[0].product_name + " purchased");
+                        console.log(quantity + " qty @ $" + res[0].price);
 
-                    console.log("\nYou have chosen item " + res[answer.productID - 1].product_name + "Quantity\n");
-
-                    if (res[answer.productID - 1].stock_quantity < answer.quantity){
-                        console.log("Not enought in stock, check back soon\n")
-                    }else{
-                        connection.query("UPDATE products SET stock_quantity = stock_quantity - ? WHERE item ")
-                        [answer.quantity, answer.productID],
-                        function(err,res){
-                            if(err) throw err;
+                        var newQuantity = res[0].stock_quantity - quantity;
+                        connection.query("UPDATE products SET stock_quantity = " + newQuantity + 
+                        " WHERE item_id = " + 
+                        res[0].item_id, 
+                        function(err,resUpdate){
+                            if (err) throw err;
+                            console.log("");
+                            console.log("Your Order has been Processed");
+                            console.log("Thanks for Shopping!");
+                            console.log("");
+                            connection.end();
                         }
-
-                        console.log("Order Confirmed! We Thank you for shopping with bamazon! \n");
-                        console.log("Quantity Updated");
-                    }
-                    start();
+                        ); 
+                    } 
+                    
                 })
-
 
 
             })
