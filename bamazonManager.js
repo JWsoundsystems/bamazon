@@ -18,7 +18,7 @@ connection.connect(function(err){
 
 
 function start() {
-    console.log("    ============ Welcome to Bamazon ============    ");
+    console.log("    ============ Welcome to Bamazon Manager ============    ");
     console.log("How May I Help You?");
 
     inquirer
@@ -27,11 +27,11 @@ function start() {
             name: "intro",
             type: "list",
             message: "What would you like to do?",
-            choices: ["Browse Catalog", "Purchase Item"]
+            choices: ["View Products for Sale", "View Low Inventory", "Add to Inventory", "Add New Product"]
         }
     ])
     .then(function(answer){
-        if(answer.intro === "Browse Catalog"){
+        if(answer.intro === "View Products for Sale"){
             connection.query("SELECT * FROM products", function(err, res){
                 if (err) throw err;
                 console.table(res);
@@ -57,19 +57,19 @@ function start() {
                 connection.query("SELECT * FROM products", function(err, res){
                     if (err) throw err;
                     var quantity = answer.quantity;
-                    if (quantity > res[answer.item_id - 1].stock_quantity) {
-                        console.log("We only have " + res[answer.item_id - 1].stock_quantity + " items of the product selected")
+                    if (quantity > res[0].stock_quantity) {
+                        console.log("We only have " + res[0].stock_quantity + " items of the product selected")
                         start();
  
                     } else{  
                         console.log("");
-                        console.log(res[answer.item_id - 1].product_name + " purchased");
-                        console.log(quantity + " qty @ $" + res[answer.item_id - 1].price);
+                        console.log(res[0].product_name + " purchased");
+                        console.log(quantity + " qty @ $" + res[0].price);
 
-                        var newQuantity = res[answer.item_id - 1].stock_quantity - quantity;
+                        var newQuantity = res[0].stock_quantity - quantity;
                         connection.query("UPDATE products SET stock_quantity = " + newQuantity + 
                         " WHERE item_id = " + 
-                        res[answer.item_id - 1].item_id, 
+                        res[0].item_id, 
                         function(err,resUpdate){
                             if (err) throw err;
                             console.log("");
